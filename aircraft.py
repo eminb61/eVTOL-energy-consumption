@@ -111,7 +111,8 @@ class Aircraft:
                                                      end_air_speed=end_air_speed), 2)
         self.metrics[self.flight_direction]['phase_energy']['climb_transition'] += energy_consumption
         # Update previous velocity and location
-        self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
 
@@ -132,7 +133,8 @@ class Aircraft:
                                           end_air_speed=end_air_speed), 2)
         self.metrics[self.flight_direction]['phase_energy']['climb'] += energy_consumption
         # Update previous velocity and location
-        self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
     
@@ -155,7 +157,8 @@ class Aircraft:
         energy_consumption = round(
             self.cruise_energy_consumption(time_cruise=self.travel_time, cruise_speed=magnitude(true_v)), 2)
         self.metrics[self.flight_direction]['phase_energy']['cruise'] += energy_consumption
-        self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
         
@@ -177,7 +180,8 @@ class Aircraft:
         
         self.metrics[self.flight_direction]['phase_energy']['descent'] += energy_consumption
 
-        self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
     
@@ -198,7 +202,8 @@ class Aircraft:
                                                        end_air_speed=end_air_speed), 2)
         
         self.metrics[self.flight_direction]['phase_energy']['descent_transition'] += energy_consumption
-        self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
 
@@ -359,21 +364,18 @@ class Aircraft:
         # Update destination heading
         destination_heading = self.compute_destination_heading()
         
-        # Account for Wind
-        if phase == 'CRUISE':
-            true_v, ground_v = self.wind.compute_aircraft_velocity(destination_heading=destination_heading,
-                                                                   true_airspeed_desired=end_air_speed,
-                                                                   ground_speed_threshold=0.1)
-        else:
-            true_v, ground_v = self.wind.compute_aircraft_velocity(destination_heading=destination_heading,
-                                                                   true_airspeed_desired=end_air_speed,
-                                                                   ground_speed_threshold=0.1)
+        true_v, ground_v = self.wind.compute_aircraft_velocity(destination_heading=destination_heading,
+                                                               true_airspeed_desired=self.horizontal_velocity,
+                                                               ground_speed_threshold=0.1)
         
         # Update the end air speed
-        end_air_speed = self.compute_air_speed(true_v[0], true_v[1])  
+        end_air_speed = self.compute_air_speed(self.vertical_velocity, true_v[1])  
 
         
         return start_air_speed, end_air_speed, true_v, ground_v   
+    
+    def compute_horizontal_speed_component(self, true_horizontal_velocity, vertical_velocity):
+        return np.sqrt(true_horizontal_velocity**2 - vertical_velocity**2)
     
     def update_prev_velocity(self, horizontal_velocity, vertical_velocity):
         self.prev_vertical_velocity = vertical_velocity
