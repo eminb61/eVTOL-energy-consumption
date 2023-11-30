@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import logging
 
 def haversine_dist(lat1: float, lon1: float, lat2: float, lon2: float, unit: str = 'mile') -> float:
     # 6367 for distance in KM for miles use 3958
@@ -80,3 +81,27 @@ def update_is_first_last_time(route, flight_directions):
             route.at[last_descent_transition_idx, 'is_first_last_time'] = True
 
     return route
+
+def log_phase_info(aircraft, phase):
+    logging.info(f"\nPhase: {phase}")
+    logging.info(f"Horizontal velocity: {aircraft.horizontal_velocity} m/s")
+    logging.info(f"Vertical velocity: {aircraft.vertical_velocity} m/s")
+    logging.info(f"Travel time: {aircraft.travel_time} s")
+
+def log_location_and_speed(aircraft):
+    logging.info(f"Altitude: {aircraft.altitude} m")
+    logging.info(f"latitude: {aircraft.latitude}")
+    logging.info(f"longitude: {aircraft.longitude}")    
+    logging.info(f"Previous horizontal velocity: {aircraft.prev_horizontal_velocity} m/s")
+    logging.info(f"Previous vertical velocity: {aircraft.prev_vertical_velocity} m/s")
+    logging.info(f"Previous latitude: {aircraft.prev_latitude}")
+    logging.info(f"Previous longitude: {aircraft.prev_longitude}")
+
+def log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v):
+    logging.info(f"Start air speed: {start_air_speed} m/s")
+    logging.info(f"End air speed: {end_air_speed} m/s")
+    logging.info(f"True velocity: {true_v} m/s")
+    logging.info(f"Ground velocity: {ground_v} m/s")
+
+def log_wind_travel_time(travel_time):
+    logging.info(f"New travel time under wind: {travel_time} s")

@@ -2,6 +2,7 @@ import numpy as np
 from math import sin, asin, pi
 from utils.vector_math import vector_to_heading, swap_angle_relative_x_axis_north, heading_to_vector, magnitude, convert_to_range_zero_to_two_pi
 from utils.units import degrees_to_radians, mph_to_metersec
+import logging
 
 class Wind:
 
@@ -24,7 +25,7 @@ class Wind:
         where a = desired_heading, c = true_heading, b = wind_heading all relative to the x-axis (using swap_angle_relative_x_axis_north),
         and |B| = wind_mag and |A| = cruise_speed.
         """
-        
+        logging.info(f"PROCESSING VELOCITY FOR WIND: Cruise speed = {cruise_speed}, Desired heading = {desired_heading}, Wind vector = {v_wind}")
         wind_mag = magnitude(v_wind)
         a = swap_angle_relative_x_axis_north(desired_heading)
         b = swap_angle_relative_x_axis_north(vector_to_heading(v_wind))
@@ -41,15 +42,19 @@ class Wind:
         
         c = a - asin(min(max(right_hand_side, -1), 1)) # technically, c = a - asin(rhs) - 2pi * k, min and max prevent rounding errors
         required_heading = swap_angle_relative_x_axis_north(c)
+
+        logging.info(f"Desired heading = {desired_heading}, Required heading = {required_heading}")
         
         # new velocities
         true_velocity = heading_to_vector(required_heading, magnitude=cruise_speed)
         ground_velocity = Wind.ground_velocity(true_velocity, v_wind)
+
+        logging.info(f"BEFORE RTA VELOCITY WIND ADJUSTMENT: True velocity = {true_velocity}, Ground velocity = {ground_velocity}")
                 
         # if ground_speed @ given true_airspeed < threshold, return the minimum true velocity needed to fly in the desired heading @ threshold
         if ground_speed_threshold and magnitude(ground_velocity) < ground_speed_threshold:
             return Wind.rta_velocity_wind_adjusted(ground_speed_threshold, desired_heading, v_wind)
-
+        
         return true_velocity
 
     @staticmethod
@@ -62,6 +67,8 @@ class Wind:
         """
         
         v_desired = heading_to_vector(desired_heading, magnitude=desired_speed)
+
+        logging.info(f"AFTER RTA VELOCITY WIND ADJUSTMENT: {np.subtract(v_desired, v_wind)}")
         
         return np.subtract(v_desired, v_wind)
     
@@ -88,7 +95,7 @@ class Wind:
         
         return heading_to_vector(wind_origin_heading + pi, magnitude=wind_magnitude)        
     
-    def compute_aircraft_velocity(self, destination_heading, true_airspeed_desired: float, stall_speed: float) -> (np.ndarray, np.ndarray):
+    def compute_aircraft_velocity(self, destination_heading, true_airspeed_desired: float, ground_speed_threshold: float) -> (np.ndarray, np.ndarray):
         """ Computes the true velocity vector of the aircraft such that the aircraft flies toward its 
         destination with respect to the ground in the presence of cross wind, while only applying the 
         desired (power optimal) true airspeed.
@@ -105,14 +112,18 @@ class Wind:
             v_wind: np.ndarray = Wind.make_static_wind_vector_relative_to_the_aircraft(self.wind_angle, destination_heading, self.wind_magnitude)
         elif self.reference_frame == 'relative_to_north':
             v_wind: np.ndarray = Wind.make_wind_vector_relative_to_north(self.wind_angle, self.wind_magnitude)
+            logging.info(f"Wind vector relative to North: {v_wind}")
   
         # note: |true_vector| = true_airspeed_desired UNLESS wind is too strong, and a greater true_airspeed is needed
-        true_vector = Wind.wind_adjusted_true_velocity(true_airspeed_desired, destination_heading, v_wind, stall_speed)
+        true_vector = Wind.wind_adjusted_true_velocity(cruise_speed=true_airspeed_desired, 
+                                                       desired_heading=destination_heading, 
+                                                       v_wind=v_wind, 
+                                                       ground_speed_threshold=ground_speed_threshold)
         ground_vector = Wind.ground_velocity(true_vector, v_wind)
         
         # Verify aircraft flight direction and speeds.
         Wind.verify_aircraft_heading(ground_vector, destination_heading)
-        Wind.verify_aircraft_speeds(ground_vector, stall_speed, true_airspeed_desired, true_vector)
+        Wind.verify_aircraft_speeds(ground_vector, ground_speed_threshold, true_airspeed_desired, true_vector)
         
         return (true_vector, ground_vector)
     

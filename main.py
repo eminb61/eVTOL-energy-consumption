@@ -4,6 +4,7 @@ from aircraft import Aircraft
 from utils.helpers import load_config, update_is_first_last_time
 from wind.wind import Wind
 import logging
+import datetime
 import os
 import pprint
 
@@ -50,7 +51,8 @@ def compute_energy_consumption(route, flight_directions, aircraft):
 
 
 def setup_logging():
-    log_file = os.path.join(os.path.dirname(__file__), '..', 'logs/energy.log')
+    timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    log_file = os.path.join(os.path.dirname(__file__), '..', f'logs/energy-{timestamp}.log')
     logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 

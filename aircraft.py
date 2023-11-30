@@ -4,6 +4,8 @@ from power_model import vertical_takeoff_landing_phase_power, climb_transition_p
     cruise_phase_power, descent_transition_phase_power
 from flight_helpers import stall_speed
 from utils.vector_math import lat_long_to_heading, magnitude
+from utils.helpers import log_phase_info, log_location_and_speed, log_wind_speed, log_wind_travel_time
+import logging
 
 class Aircraft:
     def __init__(self, aircraft_params, flight_directions, wind):
@@ -76,6 +78,9 @@ class Aircraft:
     def hover_climb_phase(self, phase_info):
         """Hover climb phase of the takeoff."""
         self.extract_phase_info(phase_info)
+        log_phase_info(aircraft=self, phase='HOVER CLIMB')
+        log_location_and_speed(aircraft=self)
+
         self.metrics[self.flight_direction]['phase_time']['hover_climb'] += round(self.travel_time, 2)
         energy_consumption = round(
             self.vertical_takeoff_landing_energy_consumption(start_altitude=self.altitude,
@@ -84,14 +89,20 @@ class Aircraft:
                                                              operation='takeoff'), 2)
         self.metrics[self.flight_direction]['phase_energy']['hover_climb'] += energy_consumption
         self.update_location_and_velocity(horizontal_velocity=self.horizontal_velocity, vertical_velocity=self.vertical_velocity)
+        log_location_and_speed(aircraft=self)
+
         return energy_consumption
 
     def climb_transition_phase(self, phase_info):
         """Climb transition phase of the takeoff."""
         self.extract_phase_info(phase_info)
+        log_phase_info(aircraft=self, phase='CLIMB TRANSITION')
+        log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['climb_transition'] += round(self.travel_time, 2)
 
-        start_air_speed, end_air_speed, true_v, _ = self.adjust_speed_based_on_wind()
+        # TODO: !!! Use wind adjusted speeds
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
+        log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
         energy_consumption = round(
             self.climb_transition_energy_consumption(climb_transition_end_altitude=self.altitude+self.vertical_distance,
@@ -101,14 +112,18 @@ class Aircraft:
         self.metrics[self.flight_direction]['phase_energy']['climb_transition'] += energy_consumption
         # Update previous velocity and location
         self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        log_location_and_speed(aircraft=self)
         return energy_consumption
 
     def climb_phase(self, phase_info):
         """Climbing to cruise altitude phase."""
         self.extract_phase_info(phase_info)
+        log_phase_info(aircraft=self, phase='CLIMB')
+        log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['climb'] += round(self.travel_time, 2)
 
-        start_air_speed, end_air_speed, true_v, _ = self.adjust_speed_based_on_wind()
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
+        log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
         energy_consumption = round(
             self.climb_energy_consumption(climb_end_altitude=self.altitude+self.vertical_distance,
@@ -118,32 +133,41 @@ class Aircraft:
         self.metrics[self.flight_direction]['phase_energy']['climb'] += energy_consumption
         # Update previous velocity and location
         self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        log_location_and_speed(aircraft=self)
         return energy_consumption
     
     def cruise_phase(self, phase_info):
         """Cruise phase of the mission."""
         self.extract_phase_info(phase_info)
+        log_phase_info(aircraft=self, phase='CRUISE')
+        log_location_and_speed(aircraft=self)
         
         start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
+        log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
         link_traversal_time = self.compute_travel_time_from_speed(distance=self.horizontal_distance,
                                                                   horizontal_speed=magnitude(ground_v)) 
 
         self.travel_time = link_traversal_time
+        log_wind_travel_time(link_traversal_time)
         self.metrics[self.flight_direction]['phase_time']['cruise'] += round(self.travel_time, 2)       
 
         energy_consumption = round(
             self.cruise_energy_consumption(time_cruise=self.travel_time, cruise_speed=magnitude(true_v)), 2)
         self.metrics[self.flight_direction]['phase_energy']['cruise'] += energy_consumption
         self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        log_location_and_speed(aircraft=self)
         return energy_consumption
         
     def descent_phase(self, phase_info):
         """Descending from cruise altitude phase."""
         self.extract_phase_info(phase_info)
+        log_phase_info(aircraft=self, phase='DESCENT')
+        log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['descent'] += round(self.travel_time, 2)
 
-        start_air_speed, end_air_speed, true_v, _ = self.adjust_speed_based_on_wind()
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
+        log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
         energy_consumption = round(
             self.descent_energy_consumption(descend_end_altitude=self.altitude-self.vertical_distance,
@@ -154,14 +178,18 @@ class Aircraft:
         self.metrics[self.flight_direction]['phase_energy']['descent'] += energy_consumption
 
         self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        log_location_and_speed(aircraft=self)
         return energy_consumption
     
     def descent_transition_phase(self, phase_info):
         """Descent transition phase of the landing."""
         self.extract_phase_info(phase_info)
+        log_phase_info(aircraft=self, phase='DESCENT TRANSITION')
+        log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['descent_transition'] += round(self.travel_time, 2)
 
-        start_air_speed, end_air_speed, true_v, _ = self.adjust_speed_based_on_wind()
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
+        log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
         energy_consumption = round(
             self.descent_transition_energy_consumption(descend_transition_end_altitude=self.altitude-self.vertical_distance,
@@ -171,11 +199,14 @@ class Aircraft:
         
         self.metrics[self.flight_direction]['phase_energy']['descent_transition'] += energy_consumption
         self.update_location_and_velocity(horizontal_velocity=true_v[0], vertical_velocity=true_v[1])
+        log_location_and_speed(aircraft=self)
         return energy_consumption
 
     def hover_descent_phase(self, phase_info):
         """Hover descent phase of the landing."""
         self.extract_phase_info(phase_info)
+        log_phase_info(aircraft=self, phase='HOVER DESCENT')
+        log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['hover_descent'] += round(self.travel_time, 2)
         energy_consumption = round(
             self.vertical_takeoff_landing_energy_consumption(start_altitude=self.altitude,
@@ -183,6 +214,8 @@ class Aircraft:
                                                              hover_time=self.travel_time,
                                                              operation='landing'), 2)
         self.metrics[self.flight_direction]['phase_energy']['hover_descent'] += energy_consumption
+        self.update_location_and_velocity(horizontal_velocity=self.horizontal_velocity, vertical_velocity=self.vertical_velocity)
+        log_location_and_speed(aircraft=self)        
         return energy_consumption
 
     def vertical_takeoff_landing_energy_consumption(self, start_altitude: float, end_altitude, hover_time: float, operation: str) -> float:
@@ -319,7 +352,9 @@ class Aircraft:
         start_air_speed = self.compute_air_speed(self.prev_horizontal_velocity, self.prev_vertical_velocity)
         # Compute end air speed according to the route file
         end_air_speed = self.compute_air_speed(self.horizontal_velocity, self.vertical_velocity)
-        average_air_speed = round((start_air_speed + end_air_speed) / 2, 2)
+        logging.info(f"Before Wind Processing: Start air speed = {start_air_speed}, End air speed = {end_air_speed}")
+
+        # average_air_speed = round((start_air_speed + end_air_speed) / 2, 2)
 
         # Update destination heading
         destination_heading = self.compute_destination_heading()
@@ -328,11 +363,11 @@ class Aircraft:
         if phase == 'CRUISE':
             true_v, ground_v = self.wind.compute_aircraft_velocity(destination_heading=destination_heading,
                                                                    true_airspeed_desired=end_air_speed,
-                                                                   stall_speed=self.stall_speed)
+                                                                   ground_speed_threshold=0.1)
         else:
             true_v, ground_v = self.wind.compute_aircraft_velocity(destination_heading=destination_heading,
-                                                                   true_airspeed_desired=average_air_speed,
-                                                                   stall_speed=self.stall_speed)
+                                                                   true_airspeed_desired=end_air_speed,
+                                                                   ground_speed_threshold=0.1)
         
         # Update the end air speed
         end_air_speed = self.compute_air_speed(true_v[0], true_v[1])  
