@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 from aircraft import Aircraft
 from utils.helpers import load_config, update_is_first_last_time
+from wind.wind import Wind
 import logging
 import os
 import pprint
@@ -19,7 +20,9 @@ def compute_energy_consumption(route, flight_directions, aircraft):
                     'vertical_velocity': row['vertical_velocity'],
                     'travel_time': row['time_to_complete'],
                     'altitude': row['altitude'],
-                    'is_first_last_time': row['is_first_last_time']
+                    'is_first_last_time': row['is_first_last_time'],
+                    'latitude': row['latitude'],
+                    'longitude': row['longitude']
                 }
                 if row['phase'] == 'HOVER CLIMB':
                     energy_consumption = aircraft.hover_climb_phase(phase_info)
@@ -54,7 +57,6 @@ def setup_logging():
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Compute Energy Consumption for Flight Profile")
     parser.add_argument('-f', '--file', required=True, help="Path to the route file")
-    parser.add_argument('-d', '--directions', nargs='+', required=True, help="List of flight directions")
     return parser.parse_args()
 
 
@@ -62,13 +64,23 @@ if __name__ == "__main__":
     setup_logging()
     args = parse_arguments()
 
-    logging.info(f"Computing energy consumption for flight directions: {args.directions}")
-
     route = pd.read_csv(args.file)
-    route = update_is_first_last_time(route, args.directions)
+    flight_directions = route['flight_direction'].unique()
+    logging.info(f"Computing energy consumption for flight directions: {flight_directions}")
+
+    route = update_is_first_last_time(route, flight_directions)
+
+    reference_frame = 'relative_to_north'
+    wind_direction_degrees = 0
+    wind_magnitude_mph = 0
+
+    wind = Wind(reference_frame=reference_frame,
+                wind_direction_degrees=wind_direction_degrees, 
+                wind_magnitude_mph=wind_magnitude_mph)
+
     aircraft_params = load_config("./aircraft_params.json")
-    aircraft = Aircraft(aircraft_params=aircraft_params, flight_directions=args.directions)
-    updated_route = compute_energy_consumption(route, args.directions, aircraft)
+    aircraft = Aircraft(aircraft_params=aircraft_params, flight_directions=flight_directions, wind=wind)
+    updated_route = compute_energy_consumption(route, flight_directions, aircraft)
 
     pprint.pprint(aircraft.metrics)
     aircraft.print_total_energy_consumption()
