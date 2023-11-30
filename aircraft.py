@@ -112,7 +112,7 @@ class Aircraft:
         self.metrics[self.flight_direction]['phase_energy']['climb_transition'] += energy_consumption
         # Update previous velocity and location
         horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
-        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=magnitude(true_v), vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
 
@@ -134,7 +134,7 @@ class Aircraft:
         self.metrics[self.flight_direction]['phase_energy']['climb'] += energy_consumption
         # Update previous velocity and location
         horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
-        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=magnitude(true_v), vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
     
@@ -158,7 +158,7 @@ class Aircraft:
             self.cruise_energy_consumption(time_cruise=self.travel_time, cruise_speed=magnitude(true_v)), 2)
         self.metrics[self.flight_direction]['phase_energy']['cruise'] += energy_consumption
         horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
-        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=magnitude(true_v), vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
         
@@ -181,7 +181,7 @@ class Aircraft:
         self.metrics[self.flight_direction]['phase_energy']['descent'] += energy_consumption
 
         horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
-        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=magnitude(true_v), vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
     
@@ -203,7 +203,7 @@ class Aircraft:
         
         self.metrics[self.flight_direction]['phase_energy']['descent_transition'] += energy_consumption
         horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
-        self.update_location_and_velocity(horizontal_velocity=horizontal_velocity, vertical_velocity=self.vertical_velocity)
+        self.update_location_and_velocity(horizontal_velocity=magnitude(true_v), vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
         return energy_consumption
 

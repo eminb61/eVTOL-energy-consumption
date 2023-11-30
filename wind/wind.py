@@ -48,8 +48,6 @@ class Wind:
         # new velocities
         true_velocity = heading_to_vector(required_heading, magnitude=cruise_speed)
         ground_velocity = Wind.ground_velocity(true_velocity, v_wind)
-
-        logging.info(f"BEFORE RTA VELOCITY WIND ADJUSTMENT: True velocity = {true_velocity}, Ground velocity = {ground_velocity}")
                 
         # if ground_speed @ given true_airspeed < threshold, return the minimum true velocity needed to fly in the desired heading @ threshold
         if ground_speed_threshold and magnitude(ground_velocity) < ground_speed_threshold:
