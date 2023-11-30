@@ -369,7 +369,7 @@ class Aircraft:
                                                                ground_speed_threshold=0.1)
         
         # Update the end air speed
-        end_air_speed = self.compute_air_speed(self.vertical_velocity, true_v[1])  
+        end_air_speed = self.compute_air_speed(self.vertical_velocity, magnitude(true_v))  
 
         
         return start_air_speed, end_air_speed, true_v, ground_v   
