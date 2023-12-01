@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 from aircraft import Aircraft
-from utils.helpers import load_config, update_is_first_last_time
+from utils.helpers import load_config, update_is_first_last_time, save_to_database
 from wind.wind import Wind
 import logging
 import datetime
@@ -73,8 +73,8 @@ if __name__ == "__main__":
     route = update_is_first_last_time(route, flight_directions)
 
     reference_frame = 'relative_to_north'
+    wind_magnitude_mph = 0  
     wind_direction_degrees = 0
-    wind_magnitude_mph = 0
 
     wind = Wind(reference_frame=reference_frame,
                 wind_direction_degrees=wind_direction_degrees, 
@@ -88,8 +88,18 @@ if __name__ == "__main__":
     aircraft.print_total_energy_consumption()
     aircraft.print_total_flight_time()
 
-    logging.info(f"Total energy consumption: {aircraft.get_total_energy_consumption()}")
-    logging.info(f"Total flight time: {aircraft.get_total_flight_time()}")
+    total_energy_consumption = aircraft.get_total_energy_consumption()
+    total_flight_time = aircraft.get_total_flight_time()
+    print(total_energy_consumption)
+    print(total_flight_time)
+    logging.info(f"Total energy consumption: {total_energy_consumption}")
+    logging.info(f"Total flight time: {total_flight_time}")
 
-    # updated_route.to_csv('data/output_route.csv', index=False)
+    save_to_database(total_energy_consumption, 
+                     total_flight_time, 
+                     wind_direction_degrees, 
+                     wind_magnitude_mph)
+
+
+    # updated_route.to_csv('../data/output_route.csv', index=False)
 

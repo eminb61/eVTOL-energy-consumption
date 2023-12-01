@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import logging
+from utils.units import sec_to_min
 
 def haversine_dist(lat1: float, lon1: float, lat2: float, lon2: float, unit: str = 'mile') -> float:
     # 6367 for distance in KM for miles use 3958
@@ -105,3 +106,28 @@ def log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v):
 
 def log_wind_travel_time(travel_time):
     logging.info(f"New travel time under wind: {travel_time} s")
+
+
+import sqlite3
+
+def save_to_database(energy_consumption, flight_time, wind_direction, wind_magnitude):
+    connection = sqlite3.connect('energy_and_flight_time.db')
+    cursor = connection.cursor()
+
+    # Create table if it doesn't exist
+    cursor.execute('''CREATE TABLE IF NOT EXISTS flight_metrics
+                     (flight_direction TEXT, energy_consumption REAL, flight_time REAL, 
+                      wind_direction_degrees INTEGER, wind_magnitude_mph INTEGER)''')
+
+    # Iterate through the dictionary and insert each item
+    for flight_direction in energy_consumption.keys():
+        energy = round(energy_consumption.get(flight_direction, 0), 2)
+        time = sec_to_min(flight_time.get(flight_direction, 0))
+
+        cursor.execute('''INSERT INTO flight_metrics 
+                          (flight_direction, energy_consumption, flight_time, wind_direction_degrees, wind_magnitude_mph)
+                          VALUES (?, ?, ?, ?, ?)''', 
+                       (flight_direction, energy, time, wind_direction, wind_magnitude))
+
+    connection.commit()
+    connection.close()
