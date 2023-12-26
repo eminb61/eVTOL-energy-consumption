@@ -59,11 +59,13 @@ def setup_logging():
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Compute Energy Consumption for Flight Profile")
     parser.add_argument('-f', '--file', required=True, help="Path to the route file")
+    parser.add_argument('-ws', '--wind_speed', type=int, required=True, help="Wind speed (int)")
+    parser.add_argument('-wd', '--wind_direction', type=int, required=True, help="Wind direction (int)")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
-    setup_logging()
+    # setup_logging()
     args = parse_arguments()
 
     route = pd.read_csv(args.file)
@@ -72,9 +74,9 @@ if __name__ == "__main__":
 
     route = update_is_first_last_time(route, flight_directions)
 
-    reference_frame = 'relative_to_north'
-    wind_magnitude_mph = 0  
-    wind_direction_degrees = 0
+    reference_frame = 'relative_to_aircraft'
+    wind_magnitude_mph = args.wind_speed
+    wind_direction_degrees = args.wind_direction
 
     wind = Wind(reference_frame=reference_frame,
                 wind_direction_degrees=wind_direction_degrees, 
@@ -99,7 +101,4 @@ if __name__ == "__main__":
                      total_flight_time, 
                      wind_direction_degrees, 
                      wind_magnitude_mph)
-
-
-    # updated_route.to_csv('../data/output_route.csv', index=False)
 
