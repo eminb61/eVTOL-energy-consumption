@@ -56,7 +56,7 @@ class Wind:
         return true_velocity
 
     @staticmethod
-    def rta_velocity_wind_adjusted(desired_speed: float, desired_heading: float, v_wind: np.ndarray) -> np.ndarray:
+    def rta_velocity_wind_adjusted(desired_ground_speed: float, desired_heading: float, v_wind: np.ndarray) -> np.ndarray:
         """Calculate the true velocity requried to move the aircraft in the desired heading at the desired speed, in the presence of wind. 
         True airspeed and initial heading of the aircraft may change.       
         
@@ -64,7 +64,7 @@ class Wind:
          np.array: Velocity vector required to move with the desired heading at the desired speed.
         """
         
-        v_desired = heading_to_vector(desired_heading, magnitude=desired_speed)
+        v_desired = heading_to_vector(desired_heading, magnitude=desired_ground_speed)
 
         logging.info(f"AFTER RTA VELOCITY WIND ADJUSTMENT: {np.subtract(v_desired, v_wind)}")
         
@@ -76,7 +76,7 @@ class Wind:
          (0 = tailwind, 0.5pi = starboard crosswind, pi = headwind, 1.5pi = port crosswind).
         """
         
-        assert(0 <= wind_angle <= 2 * pi), "Angle must be in radians, and between 0 and 2pi."
+        assert(0 <= wind_angle <= 2 * pi + 0.01), "Angle must be in radians, and between 0 and 2pi."
     
         wind_heading = wind_angle + aircraft_heading
                 
