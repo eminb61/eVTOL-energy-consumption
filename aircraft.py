@@ -100,8 +100,8 @@ class Aircraft:
         log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['climb_transition'] += round(self.travel_time, 2)
 
-        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
-        self.wind.verify_aircraft_speeds(ground_v, 0.1, self.horizontal_velocity, true_v)
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind(phase='CLIMB TRANSITION')
+        assert abs(magnitude(ground_v) - self.horizontal_velocity) < 1e-3, "Climb phase horizontal speed incorrect."
         self.wind.verify_aircraft_heading(ground_v, self.compute_destination_heading())
         log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
@@ -123,11 +123,9 @@ class Aircraft:
         log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['climb'] += round(self.travel_time, 2)
 
-        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind(phase='CLIMB')
         
-        
-        
-        self.wind.verify_aircraft_speeds(ground_v, 0.1, self.horizontal_velocity, true_v)
+        assert abs(magnitude(ground_v) - self.horizontal_velocity) < 1e-3, "Climb phase horizontal speed incorrect."
         self.wind.verify_aircraft_heading(ground_v, self.compute_destination_heading())
         log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
@@ -148,7 +146,7 @@ class Aircraft:
         log_phase_info(aircraft=self, phase='CRUISE')
         log_location_and_speed(aircraft=self)
         
-        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind(phase='CRUISE')
         self.wind.verify_aircraft_speeds(ground_v, 0.1, self.horizontal_velocity, true_v)
         self.wind.verify_aircraft_heading(ground_v, self.compute_destination_heading())
         log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
@@ -175,8 +173,8 @@ class Aircraft:
         log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['descent'] += round(self.travel_time, 2)
 
-        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
-        self.wind.verify_aircraft_speeds(ground_v, 0.1, self.horizontal_velocity, true_v)
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind(phase='DESCENT')
+        assert abs(magnitude(ground_v) - self.horizontal_velocity) < 1e-3, "Climb phase horizontal speed incorrect."
         self.wind.verify_aircraft_heading(ground_v, self.compute_destination_heading())
         log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
@@ -199,8 +197,8 @@ class Aircraft:
         log_location_and_speed(aircraft=self)
         self.metrics[self.flight_direction]['phase_time']['descent_transition'] += round(self.travel_time, 2)
 
-        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
-        self.wind.verify_aircraft_speeds(ground_v, 0.1, self.horizontal_velocity, true_v)
+        start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind(phase='DESCENT TRANSITION')
+        assert abs(magnitude(ground_v) - self.horizontal_velocity) < 1e-3, "Climb phase horizontal speed incorrect."
         self.wind.verify_aircraft_heading(ground_v, self.compute_destination_heading())
         log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
@@ -377,10 +375,11 @@ class Aircraft:
                                                                ground_speed_threshold=0.1)
         
         # if in vertical velocity (e.g. time limited) phase, use RTA speed calculation
-        if phase in ['CLIMB', 'CLIMB TRANSITION', 'DESCENT', 'DESCENT TRANSITION']:
+        if phase and phase in ['CLIMB', 'CLIMB TRANSITION', 'DESCENT', 'DESCENT TRANSITION']:
             true_v = self.wind.rta_velocity_wind_adjusted(desired_ground_speed=self.horizontal_velocity,
-                                                          desired_heading=destination_heading)
-            ground_v = heading_to_vector(destination_heading, magnitude=self.horizontal_speed)
+                                                          desired_heading=destination_heading,
+                                                          v_wind=self.wind.get_v_wind(destination_heading))
+            ground_v = heading_to_vector(destination_heading, magnitude=self.horizontal_velocity)
         
         # Update the end air speed
         end_air_speed = self.compute_air_speed(self.vertical_velocity, magnitude(true_v))  
