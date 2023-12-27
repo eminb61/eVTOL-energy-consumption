@@ -102,3 +102,6 @@ if __name__ == "__main__":
                      wind_direction_degrees, 
                      wind_magnitude_mph)
 
+
+    # updated_route.to_csv('../data/output_route_mid_point.csv', index=False)
+

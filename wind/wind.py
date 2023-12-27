@@ -139,3 +139,4 @@ class Wind:
         if not (abs(ground_speed - ground_threshold) < 1e-9): # the aircraft was able to maintain its heading flying @ true_airspeed
             true_airspeed = magnitude(adjusted_true_v)
             assert abs(true_airspeed - desired_true_airspeed) < 1e-9, f'Aircraft true airspeed is not equal to desired true airspeed. Desired true airspeed = {desired_true_airspeed}, Actual true airspeed = {true_airspeed}.'
+            

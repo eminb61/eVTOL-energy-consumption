@@ -2,7 +2,7 @@
 import subprocess
 
 wind_speeds = list(range(5, 50, 5)) # 5, 10, ... 50 mph
-wind_directions = list(range(0, 185, 15)) # 0, 15, ... 180 degrees
+wind_directions = list(range(0, 365, 15)) # 0, 15, ... 180 degrees
 file_path = 'input_route_60_miles.csv'
 
 for ws in wind_speeds:
