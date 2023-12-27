@@ -111,21 +111,23 @@ def log_wind_travel_time(travel_time):
 import sqlite3
 
 def save_to_database(energy_consumption, flight_time, wind_direction, wind_magnitude):
-    connection = sqlite3.connect('energy_and_flight_time.db')
+    connection = sqlite3.connect('energy_and_flight_time.sqlite')
     cursor = connection.cursor()
 
-    # Create table if it doesn't exist
+    # create table if needed
     cursor.execute('''CREATE TABLE IF NOT EXISTS flight_metrics
-                     (flight_direction TEXT, energy_consumption REAL, flight_time REAL, 
+                     (id INTEGER PRIMARY KEY, flight_direction TEXT, 
+                      energy_consumption REAL, flight_time REAL, 
                       wind_direction_degrees INTEGER, wind_magnitude_mph INTEGER)''')
 
-    # Iterate through the dictionary and insert each item
+    # insert record
     for flight_direction in energy_consumption.keys():
         energy = round(energy_consumption.get(flight_direction, 0), 2)
         time = sec_to_min(flight_time.get(flight_direction, 0))
 
         cursor.execute('''INSERT INTO flight_metrics 
-                          (flight_direction, energy_consumption, flight_time, wind_direction_degrees, wind_magnitude_mph)
+                          (flight_direction, energy_consumption, flight_time, 
+                           wind_direction_degrees, wind_magnitude_mph)
                           VALUES (?, ?, ?, ?, ?)''', 
                        (flight_direction, energy, time, wind_direction, wind_magnitude))
 
