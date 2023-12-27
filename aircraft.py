@@ -225,7 +225,7 @@ class Aircraft:
 
     def vertical_takeoff_landing_energy_consumption(self, start_altitude: float, end_altitude, hover_time: float, operation: str) -> float:
         
-        self.tom = self.mtom - (self.aircraft_params['pax']-0.25)*self.aircraft_params['pax_mass']
+        self.tom = self.mtom - (self.aircraft_params['pax'])*self.aircraft_params['pax_mass']
         
         vertical_takeoff_landing_power = vertical_takeoff_landing_phase_power(start_altitude=start_altitude,
                                                                               end_altitude=end_altitude,
