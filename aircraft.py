@@ -91,7 +91,7 @@ class Aircraft:
         self.update_location_and_velocity(horizontal_velocity=self.horizontal_velocity, vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
 
-        return energy_consumption
+        return energy_consumption, round(self.travel_time, 2)
 
     def climb_transition_phase(self, phase_info):
         """Climb transition phase of the takeoff."""
@@ -160,7 +160,7 @@ class Aircraft:
         horizontal_velocity = self.compute_horizontal_speed_component(true_v[1], self.vertical_velocity)
         self.update_location_and_velocity(horizontal_velocity=magnitude(true_v), vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)
-        return energy_consumption
+        return energy_consumption, link_traversal_time
         
     def descent_phase(self, phase_info):
         """Descending from cruise altitude phase."""
@@ -221,7 +221,7 @@ class Aircraft:
         self.metrics[self.flight_direction]['phase_energy']['hover_descent'] += energy_consumption
         self.update_location_and_velocity(horizontal_velocity=self.horizontal_velocity, vertical_velocity=self.vertical_velocity)
         log_location_and_speed(aircraft=self)        
-        return energy_consumption
+        return energy_consumption, round(self.travel_time, 2)
 
     def vertical_takeoff_landing_energy_consumption(self, start_altitude: float, end_altitude, hover_time: float, operation: str) -> float:
         
