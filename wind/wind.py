@@ -93,7 +93,7 @@ class Wind:
         
         return heading_to_vector(wind_origin_heading + pi, magnitude=wind_magnitude)        
     
-    def compute_aircraft_velocity(self, destination_heading, true_airspeed_desired: float, ground_speed_threshold: float) -> (np.ndarray, np.ndarray):
+    def compute_aircraft_velocity(self, destination_heading: float, true_airspeed_desired: float, ground_speed_threshold: float) -> (np.ndarray, np.ndarray):
         """ Computes the true velocity vector of the aircraft such that the aircraft flies toward its 
         destination with respect to the ground in the presence of cross wind, while only applying the 
         desired (power optimal) true airspeed.
@@ -105,12 +105,7 @@ class Wind:
         heading of the aircraft without changing its airspeed (unless ground speed < threshold) such that the 
         aircraft flies in the right direction relative to the ground in the presence of crosswind."""
         
-        # compute wind vector in the context of the aircraft
-        if self.reference_frame == 'relative_to_aircraft':
-            v_wind: np.ndarray = Wind.make_static_wind_vector_relative_to_the_aircraft(self.wind_angle, destination_heading, self.wind_magnitude)
-        elif self.reference_frame == 'relative_to_north':
-            v_wind: np.ndarray = Wind.make_wind_vector_relative_to_north(self.wind_angle, self.wind_magnitude)
-            logging.info(f"Wind vector relative to North: {v_wind}")
+        v_wind = self.get_v_wind(destination_heading)
   
         # note: |true_vector| = true_airspeed_desired UNLESS wind is too strong, and a greater true_airspeed is needed
         true_vector = Wind.wind_adjusted_true_velocity(cruise_speed=true_airspeed_desired, 
@@ -124,6 +119,15 @@ class Wind:
         Wind.verify_aircraft_speeds(ground_vector, ground_speed_threshold, true_airspeed_desired, true_vector)
         
         return (true_vector, ground_vector)
+    
+    def get_v_wind(self, destination_heading: float = None) -> np.ndarray:
+        """Compute wind vector in the context of the aircraft."""
+        if self.reference_frame == 'relative_to_aircraft':
+            v_wind: np.ndarray = Wind.make_static_wind_vector_relative_to_the_aircraft(self.wind_angle, destination_heading, self.wind_magnitude)
+        elif self.reference_frame == 'relative_to_north':
+            v_wind: np.ndarray = Wind.make_wind_vector_relative_to_north(self.wind_angle, self.wind_magnitude)
+            logging.info(f"Wind vector relative to North: {v_wind}")
+        return v_wind
     
     # --- VERIFICATION -- 
     @staticmethod
@@ -139,4 +143,3 @@ class Wind:
         if not (abs(ground_speed - ground_threshold) < 1e-9): # the aircraft was able to maintain its heading flying @ true_airspeed
             true_airspeed = magnitude(adjusted_true_v)
             assert abs(true_airspeed - desired_true_airspeed) < 1e-9, f'Aircraft true airspeed is not equal to desired true airspeed. Desired true airspeed = {desired_true_airspeed}, Actual true airspeed = {true_airspeed}.'
-            
