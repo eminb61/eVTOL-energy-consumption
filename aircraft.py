@@ -145,6 +145,9 @@ class Aircraft:
         log_location_and_speed(aircraft=self)
         
         start_air_speed, end_air_speed, true_v, ground_v = self.adjust_speed_based_on_wind()
+        
+        self.wind.verify_aircraft_speeds()
+        
         log_wind_speed(start_air_speed, end_air_speed, true_v, ground_v)
 
         link_traversal_time = self.compute_travel_time_from_speed(distance=self.horizontal_distance,
