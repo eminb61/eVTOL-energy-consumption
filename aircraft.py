@@ -375,7 +375,7 @@ class Aircraft:
         return start_air_speed, end_air_speed, true_v, ground_v   
     
     def compute_horizontal_speed_component(self, true_horizontal_velocity, vertical_velocity):
-        return np.sqrt(true_horizontal_velocity**2 - vertical_velocity**2)
+        return np.sqrt(abs(true_horizontal_velocity**2 - vertical_velocity**2))
     
     def update_prev_velocity(self, horizontal_velocity, vertical_velocity):
         self.prev_vertical_velocity = vertical_velocity
