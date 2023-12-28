@@ -86,7 +86,7 @@ if __name__ == "__main__":
                 wind_direction_degrees=wind_direction_degrees, 
                 wind_magnitude_mph=wind_magnitude_mph)
 
-    aircraft_params = load_config("./aircraft_params.json")
+    aircraft_params = load_config("data/aircraft_params.json")
     aircraft = Aircraft(aircraft_params=aircraft_params, flight_directions=flight_directions, wind=wind)
     updated_route = compute_energy_consumption(route, flight_directions, aircraft)
 
