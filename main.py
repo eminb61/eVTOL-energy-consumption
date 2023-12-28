@@ -24,7 +24,8 @@ def compute_energy_consumption(route, flight_directions, aircraft):
                     'altitude': row['altitude'],
                     'is_first_last_time': row['is_first_last_time'],
                     'latitude': row['latitude'],
-                    'longitude': row['longitude']
+                    'longitude': row['longitude'],
+                    'destination_heading': row['destination_heading_radians']
                 }
                 if row['phase'] == 'HOVER CLIMB':
                     energy_consumption, time_to_complete = aircraft.hover_climb_phase(phase_info)
@@ -105,5 +106,5 @@ if __name__ == "__main__":
                      wind_direction_degrees, 
                      wind_magnitude_mph)
 
-    updated_route.to_csv('data/updated_route_60_miles.csv', index=False)
+    updated_route.to_csv(f'updated_{args.file}', index=False)
 
