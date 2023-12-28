@@ -102,5 +102,5 @@ if __name__ == "__main__":
                      wind_direction_degrees, 
                      wind_magnitude_mph)
 
-    updated_route.to_csv('updated_route_60_miles.csv', index=False)
+    updated_route.to_csv(f'updated_{args.file}', index=False)
 
