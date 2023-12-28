@@ -23,7 +23,8 @@ def compute_energy_consumption(route, flight_directions, aircraft):
                     'altitude': row['altitude'],
                     'is_first_last_time': row['is_first_last_time'],
                     'latitude': row['latitude'],
-                    'longitude': row['longitude']
+                    'longitude': row['longitude'],
+                    'destination_heading': row['destination_heading_radians']
                 }
                 if row['phase'] == 'HOVER CLIMB':
                     energy_consumption = aircraft.hover_climb_phase(phase_info)
