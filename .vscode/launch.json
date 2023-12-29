@@ -11,9 +11,9 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "-f", "input_route_60_miles.csv",
-                "-ws", "45",
-                "-wd", "180"
+                "-f", "sfo_sjc_route_60_miles.csv",
+                "-ws", "5",
+                "-wd", "0"
             ],
             "justMyCode": true
         }

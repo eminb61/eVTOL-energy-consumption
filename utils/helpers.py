@@ -122,7 +122,7 @@ def save_to_database(energy_consumption, flight_time, wind_direction, wind_magni
 
     # insert record
     for flight_direction in energy_consumption.keys():
-        energy = round(energy_consumption.get(flight_direction, 0), 2)
+        energy = energy_consumption.get(flight_direction, 0)
         time = sec_to_min(flight_time.get(flight_direction, 0))
 
         cursor.execute('''INSERT INTO flight_metrics 
