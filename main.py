@@ -10,6 +10,7 @@ import pprint
 
 def compute_energy_consumption(route, flight_directions, aircraft):
     energy_consumptions = []
+    time_to_complete_list = []
     for flight_direction in flight_directions:
         aircraft.flight_direction = flight_direction
         for _, row in route.iterrows():
@@ -27,27 +28,29 @@ def compute_energy_consumption(route, flight_directions, aircraft):
                     'destination_heading': row['destination_heading_radians']
                 }
                 if row['phase'] == 'HOVER CLIMB':
-                    energy_consumption = aircraft.hover_climb_phase(phase_info)
+                    energy_consumption, time_to_complete = aircraft.hover_climb_phase(phase_info)
                 elif row['phase'] == 'CLIMB TRANSITION':
-                    energy_consumption = aircraft.climb_transition_phase(phase_info)
+                    energy_consumption, time_to_complete = aircraft.climb_transition_phase(phase_info)
                 elif row['phase'] == 'CLIMB':
-                    energy_consumption = aircraft.climb_phase(phase_info)
+                    energy_consumption, time_to_complete = aircraft.climb_phase(phase_info)
                 elif row['phase'] == 'CRUISE':
-                    energy_consumption = aircraft.cruise_phase(phase_info)      
+                    energy_consumption, time_to_complete = aircraft.cruise_phase(phase_info)      
                 elif row['phase'] == 'DESCENT':
-                    energy_consumption = aircraft.descent_phase(phase_info)  
+                    energy_consumption, time_to_complete = aircraft.descent_phase(phase_info)  
                 elif row['phase'] == 'DESCENT TRANSITION':
-                    energy_consumption = aircraft.descent_transition_phase(phase_info)  
+                    energy_consumption, time_to_complete = aircraft.descent_transition_phase(phase_info)  
                 elif row['phase'] == 'HOVER DESCENT':
-                    energy_consumption = aircraft.hover_descent_phase(phase_info)   
+                    energy_consumption, time_to_complete = aircraft.hover_descent_phase(phase_info)   
                 elif row['phase'] == 'END':
-                    energy_consumption = None
+                    energy_consumption = time_to_complete = None
                     pass
                 else:
                     raise ValueError('phase must be one of the following: HOVER CLIMB, CLIMB TRANSITION, CLIMB, CRUISE, DESCENT, DESCENT TRANSITION, HOVER DESCENT')
                 
                 energy_consumptions.append(energy_consumption)
+                time_to_complete_list.append(time_to_complete)
     route['energy_consumption'] = energy_consumptions
+    route['time_to_complete'] = time_to_complete_list
     return route
 
 
@@ -83,7 +86,7 @@ if __name__ == "__main__":
                 wind_direction_degrees=wind_direction_degrees, 
                 wind_magnitude_mph=wind_magnitude_mph)
 
-    aircraft_params = load_config("./aircraft_params.json")
+    aircraft_params = load_config("data/aircraft_params.json")
     aircraft = Aircraft(aircraft_params=aircraft_params, flight_directions=flight_directions, wind=wind)
     updated_route = compute_energy_consumption(route, flight_directions, aircraft)
 
