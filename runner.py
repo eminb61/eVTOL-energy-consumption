@@ -1,9 +1,9 @@
 # Run main.py multiple times with different wind configs
 import subprocess
 
-wind_speeds = list(range(0, 50, 5)) # 5, 10, ... 50 mph
-wind_directions = list(range(0, 365, 15)) # 0, 15, ... 180 degrees
-file_path = 'sfo_sjc_route_60_miles.csv'
+wind_speeds = [10, 20, 30, 40] # mph
+wind_directions = [0, 90, 180] # degrees
+file_path = 'routes/sfo_sjc_route_60_miles.csv'
 
 for ws in wind_speeds:
     for wd in wind_directions:

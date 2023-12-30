@@ -101,10 +101,10 @@ if __name__ == "__main__":
     logging.info(f"Total energy consumption: {total_energy_consumption}")
     logging.info(f"Total flight time: {total_flight_time}")
 
-    # save_to_database(total_energy_consumption, 
-    #                  total_flight_time, 
-    #                  wind_direction_degrees, 
-    #                  wind_magnitude_mph)
+    save_to_database(total_energy_consumption, 
+                     total_flight_time, 
+                     wind_direction_degrees, 
+                     wind_magnitude_mph)
 
-    updated_route.to_csv(f'updated_{args.file}', index=False)
+    updated_route.to_csv(f'updated_{args.file}_with_phases_energy', index=False)
 
