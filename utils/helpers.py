@@ -111,7 +111,7 @@ def log_wind_travel_time(travel_time):
 import sqlite3
 
 def save_to_database(energy_consumption, flight_time, wind_direction, wind_magnitude):
-    connection = sqlite3.connect('energy_and_flight_time.sqlite')
+    connection = sqlite3.connect('energy_and_flight_time_60_mile_route.sqlite')
     cursor = connection.cursor()
 
     # create table if needed
